@@ -7,4 +7,4 @@ app = App(DIR)
 
 
 
-app.print_sync_folders()
+app.client.check_connection()

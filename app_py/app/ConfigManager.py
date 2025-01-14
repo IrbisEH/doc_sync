@@ -13,19 +13,12 @@ class ConfigManager:
 
         load_dotenv(dotenv_path=self.dotenv_path)
 
+        self.debug = bool(int(os.getenv("DEBUG", "0")))
         self.server_mode = bool(int(os.getenv("SERVER_MODE", "0")))
-        self.sync_folders = self.get_sync_folder_list()
 
-    @staticmethod
-    def get_sync_folder_list():
-        res = []
+        self.sync_client_folder = os.getenv("SYNC_CLIENT_FOLDER")
+        self.sync_server_folder = os.getenv("SYNC_SERVER_FOLDER")
 
-        i = 0
-        val = os.getenv(f"SYNC_FOLDER[{i}]", None)
-
-        while val is not None:
-            res.append(val)
-            i += 1
-            val = os.getenv(f"SYNC_FOLDER[{i}]", None)
-
-        return res
+        self.server_host = os.getenv("SERVER_HOST")
+        self.server_username = os.getenv("SERVER_USERNAME")
+        self.server_password = os.getenv("SERVER_PASSWORD")
