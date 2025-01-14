@@ -1,10 +1,21 @@
 import os
+import platform
 from pathlib import Path
 from dotenv import load_dotenv
 
 
+class OsSystems:
+    mac = 'mac'
+    ubuntu = 'ubuntu'
+
+
 class ConfigManager:
+    PLATFORMS = {
+        'darwin': OsSystems.mac
+    }
     def __init__(self, root_path):
+        self.os = self.PLATFORMS.get(platform.system().lower(), OsSystems.ubuntu)
+
         self.root_path = Path(root_path)
 
         # app relative paths
@@ -16,8 +27,10 @@ class ConfigManager:
         self.debug = bool(int(os.getenv("DEBUG", "0")))
         self.server_mode = bool(int(os.getenv("SERVER_MODE", "0")))
 
-        self.sync_client_folder = os.getenv("SYNC_CLIENT_FOLDER")
-        self.sync_server_folder = os.getenv("SYNC_SERVER_FOLDER")
+        self.sync_client_folder = Path(os.getenv("SYNC_CLIENT_FOLDER"))
+        self.sync_server_folder = Path(os.getenv("SYNC_SERVER_FOLDER"))
+
+        self.sync_json_file = self.sync_server_folder / ".folder_sync.json"
 
         self.server_host = os.getenv("SERVER_HOST")
         self.server_username = os.getenv("SERVER_USERNAME")
