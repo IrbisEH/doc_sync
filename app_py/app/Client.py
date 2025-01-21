@@ -5,7 +5,7 @@ import paramiko
 # TODO: или использовать контекст
 
 
-class Client:
+class Connection:
     def __init__(self, config_manager, log_manager):
         self.config = config_manager
         self.log = log_manager
@@ -15,6 +15,20 @@ class Client:
         self.stdin = None
         self.stdout = None
         self.stderr = None
+
+    def __enter__(self):
+        if self.sftp_client is None:
+            self.connect_sftp()
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.sftp_client is not None:
+            self.sftp_client.close()
+        # TODO: изучить нужно ли закрывать
+        if self.ssh_client is not None:
+            self.ssh_client.close()
+        return False
 
     def connect_ssh(self):
         self.ssh_client = paramiko.client.SSHClient()
@@ -30,7 +44,33 @@ class Client:
             self.connect_ssh()
         self.sftp_client = self.ssh_client.open_sftp()
 
-    def send_file(self, close_conn=True):
+    def exec_cmd(self, cmd):
+        result = None
+
+        try:
+            if self.ssh_client is None:
+                self.connect_ssh()
+
+            print(cmd)
+
+            _, stdout, stderr = self.ssh_client.exec_command(cmd)
+
+            result = stdout.read().decode('utf-8')
+            errors = stderr.read().decode('utf-8')
+
+            print(result)
+            print(errors)
+
+            if errors:
+                raise Exception(errors)
+
+        except Exception as e:
+            if self.config.debug:
+                print(e)
+
+        return result
+
+    def send_file(self):
         try:
             if self.sftp_client is None:
                 self.connect_sftp()
@@ -39,10 +79,7 @@ class Client:
             if self.config.debug:
                 print(e)
 
-        if self.sftp_client is not None and close_conn:
-            self.ssh_client.close()
-
-    def receive_file(self, close_conn=True):
+    def receive_file(self):
         try:
             if self.sftp_client is None:
                 self.connect_sftp()
@@ -51,10 +88,7 @@ class Client:
             if self.config.debug:
                 print(e)
 
-        if self.sftp_client is not None and close_conn:
-            self.ssh_client.close()
-
-    def get_files_data(self, close_conn=True):
+    def get_files_data(self):
         try:
             if self.sftp_client is None:
                 self.connect_sftp()
@@ -63,10 +97,7 @@ class Client:
             if self.config.debug:
                 print(e)
 
-        if self.sftp_client is not None and close_conn:
-            self.ssh_client.close()
-
-    def check_connection(self, close_conn=True):
+    def check_connection(self):
         try:
             if self.ssh_client is None:
                 self.connect_ssh()
@@ -82,6 +113,3 @@ class Client:
         except Exception as e:
             if self.config.debug:
                 print(e)
-
-        if self.ssh_client is not None and close_conn:
-            self.ssh_client.close()

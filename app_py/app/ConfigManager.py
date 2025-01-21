@@ -21,6 +21,8 @@ class ConfigManager:
         # app relative paths
         self.dotenv_path = self.root_path / ".env"
         self.logs_path = self.root_path / ".logs"
+        self.state_dir_path = self.root_path / ".state"
+        self.state_file_path = self.state_dir_path / "state.json"
 
         load_dotenv(dotenv_path=self.dotenv_path)
 
@@ -29,8 +31,6 @@ class ConfigManager:
 
         self.sync_client_folder = Path(os.getenv("SYNC_CLIENT_FOLDER"))
         self.sync_server_folder = Path(os.getenv("SYNC_SERVER_FOLDER"))
-
-        self.sync_json_file = self.sync_server_folder / ".folder_sync.json"
 
         self.server_host = os.getenv("SERVER_HOST")
         self.server_username = os.getenv("SERVER_USERNAME")
